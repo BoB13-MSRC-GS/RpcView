@@ -1,0 +1,10 @@
+#ifndef _RPCVIEW_VERSION_H_
+#define _RPCVIEW_VERSION_H_
+
+#define _RPCVIEW_VERSION_MAJOR_     0
+#define _RPCVIEW_VERSION_MINOR_     3
+#define _RPCVIEW_VERSION_RELEASE_   1
+#define _RPCVIEW_VERSION_BUILD_     90
+#define _RPCVIEW_PRODUCT_VERSION_   "0.3.1.90"
+
+#endif
