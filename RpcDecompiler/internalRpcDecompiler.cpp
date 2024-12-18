@@ -41,7 +41,7 @@ BOOL __fastcall getAllTypesSortedInAList(
 	_Inout_ std::list<TypeToDefine>& listAllTypesSorted,
 	_Inout_ std::ostringstream& oss)
 {
-	// oss << std::endl << "\t/* Call getAllTypesSortedInAList */\n" << std::endl;
+	
 	
 	BOOL	bResult;
 
@@ -113,11 +113,9 @@ BOOL __fastcall dumpTypeList(
 	listTypesToDefine.sort();
 	listTypesToDefine.unique();
 
-	// oss << std::endl << "\t/* Call dumpTypeList */\n" << std::endl;
 
 	for(auto iter=listTypesToDefine.begin(); iter!=listTypesToDefine.end(); iter++)
 	{
-		// oss << std::endl << "\t/* listTypesToDefine iter getRva: */ : " << (*iter).getRva() << std::endl;
 		bResult = printType(
 			pContext, 
 			*iter, 
@@ -670,6 +668,7 @@ DWORD __fastcall getSimpleTypeMemorySize(_In_ FC_TYPE fcType)
 	case FC_INT3264:
 	case FC_UINT3264:
 	case FC_SYSTEM_HANDLE:
+	case FC_EMBEDDED_COMPLEX:
 		return 8;
 
 	case FC_ZERO:
@@ -791,10 +790,14 @@ BOOL __fastcall printSimpleType(
 		break;
 
 	case FC_SYSTEM_HANDLE:
-		oss << "handle_t ";
+		oss << "/* FC_SYSTEM_HANDLE */ hyper ";
+		break;
+	
+	case FC_EMBEDDED_COMPLEX:
+		oss << "/* FC_SYSTEM_HANDLE */ hyper ";
 		break;
 
-	default:
+	default :
 		oss << "[ERROR] parseBaseType : unknown type ("<<fcType<<")";
 		return FALSE;  // TODO : ret FALSE
 
@@ -852,10 +855,13 @@ BOOL __fastcall rpcDumpType(
 		case FC_INT3264:
 		case FC_UINT3264:
 		case FC_SYSTEM_HANDLE:
+		case FC_EMBEDDED_COMPLEX:
 			//processSimpleType(pContext, 
 			bResult = processSimpleType(pContext, (FC_TYPE)bFC_TYPE, paramDesc,  oss);
 			if (bResult==FALSE) RPC_ERROR_FN("processSimpleType failed\n");
 			break;
+
+
 
 			//------------------------------------
 			//    Arrays
@@ -921,6 +927,9 @@ BOOL __fastcall rpcDumpType(
 				oss);
 			if (bResult == FALSE) RPC_ERROR_FN("processNonEncapsulatedUnion failed\n");
 			break;
+
+			
+
 
 			//------------------------------------
 			//    Pointers
@@ -1015,20 +1024,20 @@ BOOL __fastcall rpcDumpType(
 			break;
 
 		case FC_ZERO:
+
 			oss << "/* FC_ZERO */";
 			bResult = TRUE;
 			break;
-
 		default:
 			RPC_ERROR_FN("Invalid type\n");
-			// oss << "[ERROR] dump type : unknown type (0x" << std::hex << (int)bFC_TYPE << ")" << std::endl;
-			oss << "unknown_type (0x" << std::hex << (int)bFC_TYPE << ") ";
+			oss << "[ERROR] dump type : unknown_type (0x" << std::hex << (int)bFC_TYPE << ") ";
 			oss<<paramDesc.getStrTypeName();
 			bResult = TRUE;
 			return bResult;
 			
 		return FALSE;
 	}
+
 	
 	return bResult;
 }
@@ -1082,6 +1091,7 @@ BOOL __fastcall getTypeMemorySize(
 		case FC_INT3264:
 		case FC_UINT3264:
 		case FC_SYSTEM_HANDLE:
+		case FC_EMBEDDED_COMPLEX:
 			//processSimpleType(pContext, 
 			(*pszMemorySize) = getSimpleTypeMemorySize((FC_TYPE)bFC_TYPE);
 			bResult = TRUE;

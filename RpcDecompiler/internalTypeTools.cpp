@@ -51,8 +51,8 @@ BOOL __fastcall isSimpleType(
 		type == FC_ERROR_STATUS_T	||
 		type == FC_INT3264		||
 		type == FC_UINT3264		||
-		type == FC_SYSTEM_HANDLE ||
-		type == FC_IGNORE
+		type == FC_IGNORE		||
+		type == FC_SYSTEM_HANDLE
 		)
 	{
 		bResult				= TRUE;
@@ -69,8 +69,6 @@ BOOL __fastcall printType(
 	_Inout_ std::list<TypeToDefine>& listAdditionalType,
 	_Inout_	std::ostringstream& oss)
 {
-	// oss << std::endl << "\t/* Call printType */\n" << std::endl;
-
 	BOOL					bResult				= FALSE;
 	RpcDecompilerCtxt_T *	pRpcDecompilerCtxt	= (RpcDecompilerCtxt_T *) pContext;
 
@@ -93,14 +91,14 @@ BOOL __fastcall printType(
 	//	sizeof(BYTE)
 	//	);
 
-	// #ifdef DBG_DECOMP
-	// oss << std::endl << "/*  pType :  0x"<<std::hex<<(LONGLONG)typeToDefine.getFcType();
-	// if(typeToDefine.getFcType() == FC_NON_ENCAPSULATED_UNION)
-	// {
-	// 	oss << "  pNonEncapUnionheader : 0x"<<(LONGLONG)typeToDefine.getpNonEncapuslatedUnionHeader();
-	// }
-	// oss << std::dec<<" */"<< std::endl;
-	// #endif
+	#ifdef DBG_DECOMP
+	oss << std::endl << "/*  pType :  0x"<<std::hex<<(LONGLONG)typeToDefine.getpType() ;
+	if(typeToDefine.getFcType() == FC_NON_ENCAPSULATED_UNION)
+	{
+		oss << "  pNonEncapUnionheader : 0x"<<(LONGLONG)typeToDefine.getpNonEncapuslatedUnionHeader();
+	}
+	oss << std::dec<<" */"<< std::endl;
+	#endif
 
 
 
@@ -110,7 +108,6 @@ BOOL __fastcall printType(
 	// structures
 	//
 	case FC_STRUCT:
-		// oss << std::endl << "\t/* process FC_STRUCT */\n" << std::endl;
 		bResult = defineTypeSimpleStruct(pContext, pType, typeToDefine, listAdditionalType, oss);
 		//PrintTypeSimpleStructure(pContext, pType, typeOfContainer, listAdditionalType, oss);
 		break;

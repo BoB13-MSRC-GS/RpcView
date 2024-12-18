@@ -62,6 +62,8 @@ DECOMP_STATUS		IdlType::decode(const void* pCtx)
 
 	// fill param desc with ParamAttr
 	ParamDesc.fillWithParamAttr(m_paramDescription.oif_Format.paramAttributes);
+
+	
 	
 	// TODO : ParamDesc was used in old mode, remove it
 	if(m_paramDescription.oif_Format.paramAttributes.IsReturn == 0)
@@ -69,8 +71,10 @@ DECOMP_STATUS		IdlType::decode(const void* pCtx)
 		ossTmp << "arg_" << argNbr;
 		ParamDesc.setParamName(ossTmp.str());
 	}
+	
 
-
+				
+	
 	// param is base type
 	if(m_paramDescription.oif_Format.paramAttributes.IsBasetype)
 	{
@@ -102,10 +106,12 @@ DECOMP_STATUS		IdlType::decode(const void* pCtx)
 		{
 			RPC_ERROR_FN("rpcDumpType failed\n");
 			return DS_ERR_IN_SIMPLE_TYPE;
-		}
+		}		
 	}// !(paramToPrint.oif_Format.paramAttributes.IsBasetype)
 	
+	
 	m_name = oss.str();
+
 	return DS_SUCCESS;
 }
 

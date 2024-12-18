@@ -530,7 +530,6 @@ End:;
 
 	//------------------------------------------------------------------------------
 	BOOL __fastcall RpcDecompilerPrintAllProcedures(VOID* pContext)
-	//BOOL	__fastcall RpcDecompilerPrintAllProceduresNew(VOID* pContext)
 	{
 
 		RpcDecompilerCtxt_T*	pRpcDecompilerCtxt	= (RpcDecompilerCtxt_T*)pContext;
@@ -654,7 +653,7 @@ End:;
 			//ossHeader << narrow(std::wstring(DEFAULT_IF_NAME)) <<" \n{\n";
 			ossHeader << DEFAULT_IF_NAME <<" \n{\n";
 		}
-		((UCHAR*)"\ninterface %ls\n{\n", DEFAULT_IF_NAME);
+		RPC_DEBUG_FN((UCHAR*)"\ninterface %ls\n{\n", DEFAULT_IF_NAME);
 		//Decompile each type
 		//if ( RpcDecompilerPrintAllTypes(pContext) == FALSE ) goto End;
 
@@ -722,12 +721,9 @@ End:;
 		return TRUE;
 	}//end RpcDecompilerPrintAllProcedures
 
-
-	// PID로 프로세스 이름 찾기
 	std::string GetProcessNameFromPID(DWORD processID) {
 		std::string processName = "Unknown";
 		
-		// 프로세스 스냅샷을 생성
 		HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 		if (hProcessSnap == INVALID_HANDLE_VALUE) {
 			std::cerr << "Failed to create process snapshot." << std::endl;
@@ -737,28 +733,24 @@ End:;
 		PROCESSENTRY32 pe32;
 		pe32.dwSize = sizeof(PROCESSENTRY32);
 
-		// 첫 번째 프로세스를 가져옴
 		if (Process32First(hProcessSnap, &pe32)) {
 			do {
 				if (pe32.th32ProcessID == processID) {
 					processName = pe32.szExeFile;
 					break;
 				}
-			} while (Process32Next(hProcessSnap, &pe32)); // 다음 프로세스로 이동
+			} while (Process32Next(hProcessSnap, &pe32));
 		} else {
 			std::cerr << "Failed to get first process." << std::endl;
 		}
 
-		// 핸들 닫기
 		CloseHandle(hProcessSnap);
 		return processName;
 	}
 
-	// 모듈 베이스 주소로 모듈명 찾기
 	std::string GetModuleNameFromBaseAddress(UINT processID, void* moduleBaseAddress) {
 		std::string moduleName = "Unknown";
 
-		// 모듈 스냅샷 생성
 		HANDLE hModuleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, processID);
 		if (hModuleSnap == INVALID_HANDLE_VALUE) {
 			std::cerr << "Failed to create module snapshot." << std::endl;
@@ -768,25 +760,22 @@ End:;
 		MODULEENTRY32 me32;
 		me32.dwSize = sizeof(MODULEENTRY32);
 
-		// 첫 번째 모듈 가져옴
 		if (Module32First(hModuleSnap, &me32)) {
 			do {
 				if (me32.modBaseAddr == moduleBaseAddress) {
 					moduleName = me32.szModule;
 					break;
 				}
-			} while (Module32Next(hModuleSnap, &me32)); // 다음 모듈로 이동
+			} while (Module32Next(hModuleSnap, &me32));
 		} else {
 			std::cerr << "Failed to get first module." << std::endl;
 		}
 
-		// 핸들 닫기
 		CloseHandle(hModuleSnap);
 		return moduleName;
 	}
 
 	BOOL	__fastcall RpcDecompilerPrintAllProceduresNew(VOID* pContext)
-	//BOOL __fastcall RpcDecompilerPrintAllProcedures(VOID* pContext)
 	{
 		RpcDecompilerCtxt_T*	pRpcDecompilerCtxt = (RpcDecompilerCtxt_T*)pContext;
 		std::ostringstream		ossIf;
@@ -827,10 +816,6 @@ End:;
 		// Create idlInterface used to decode interface
 		IdlInterface		idlIf(strIfname, *(pRpcDecompilerCtxt->pRpcDecompilerInfo->pIfId), pRpcDecompilerCtxt->pRpcDecompilerInfo->NumberOfProcedures);
 		
-		// ossIf << "strIfname: " << strIfname;
-		// ossIf << "\npRpcDecompilerCtxt->pRpcDecompilerInfo->NumberOfProcedures: " << pRpcDecompilerCtxt->pRpcDecompilerInfo->NumberOfProcedures;
-		// ossIf << "\n";
-
 		status = idlIf.decode(pContext);
 
 		if(status != DS_SUCCESS)
@@ -839,11 +824,6 @@ End:;
 		}
 		ossIf << idlIf;
 
-		// printf("%p\n", pRpcDecompilerCtxt->pRpcDecompilerInfo->Pid);
-		// printf("%s\n", GetProcessNameFromPID(pRpcDecompilerCtxt->pRpcDecompilerInfo->Pid));
-
-		// printf("%p\n", pRpcDecompilerCtxt->pRpcDecompilerInfo->pModuleBase);
-		// printf("%s\n", GetModuleNameFromBaseAddress(pRpcDecompilerCtxt->pRpcDecompilerInfo->Pid, (void *)pRpcDecompilerCtxt->pRpcDecompilerInfo->pModuleBase));
 		std::string processName = GetProcessNameFromPID(pRpcDecompilerCtxt->pRpcDecompilerInfo->Pid);
     	std::string moduleName = GetModuleNameFromBaseAddress(pRpcDecompilerCtxt->pRpcDecompilerInfo->Pid, (void *)pRpcDecompilerCtxt->pRpcDecompilerInfo->pModuleBase);
 		
@@ -867,22 +847,39 @@ End:;
 			ifId->Uuid.Data4[6],
 			ifId->Uuid.Data4[7]);
 
-		// File Name 생성
-		std::string idlFileName = processName + "_" + moduleName + "_{" + chUuidStr + "}.idl";
-		std::string midl_command = "midl.exe " + idlFileName;
-    	std::cout << "Generated file: " << idlFileName << std::endl;
 
-		// File 생성
-		std::ofstream outFile(idlFileName, std::ios::app);
-		outFile << idlIf;
-		
-		// MIDL 컴파일 명령어
-		int result = system(midl_command.c_str());
+		std::string workspaceDir = "workspace";
+		std::string folderName = processName + "_" + moduleName + "_{" + chUuidStr + "}";
+		std::string fullFolderPath = workspaceDir + "\\" + folderName;
+		std::string idlFileName = fullFolderPath + "\\" + folderName + ".idl";
 
-		if (result == 0) {
-			std::cout << "successfully." << std::endl;
+		if (CreateDirectory(fullFolderPath.c_str(), NULL) || ERROR_ALREADY_EXISTS == GetLastError()) {
+			if (std::ifstream(idlFileName)) {
+				if (std::remove(idlFileName.c_str()) != 0) {
+					std::cerr << "Error: Unable to delete existing file " << idlFileName << std::endl;
+					return -1;
+				}
+			}
+
+			std::cout << "Generated file: " << idlFileName << std::endl;
+			std::ofstream outFile(idlFileName, std::ios::app);
+			if (!outFile.is_open()) {
+				std::cerr << "Error: Unable to create file " << idlFileName << std::endl;
+				return -1;
+			}
+			outFile << idlIf;
+			outFile.close();
+
+			std::string midl_command = "midl.exe /out " + fullFolderPath + " " + idlFileName;
+			int result = system(midl_command.c_str());
+
+			if (result == 0) {
+				std::cout << "Successfully compiled." << std::endl;
+			} else {
+				std::cerr << "Failed with code: " << result << std::endl;
+			}
 		} else {
-			std::cerr << "failed with code: " << result << std::endl;
+			std::cerr << "Error: Unable to create directory " << fullFolderPath << std::endl;
 		}
 
 		// and then dump content

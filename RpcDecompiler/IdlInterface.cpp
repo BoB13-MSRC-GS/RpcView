@@ -67,7 +67,6 @@ DECOMP_STATUS	IdlInterface::decode(void* pCtx)
 		}
 	}
 
-	// dStatusRet = DS_SUCCESS;
 	if(dStatusRet == DS_SUCCESS)
 	{
 		// once every functions is decoded 
@@ -169,9 +168,7 @@ std::ostream&	IdlInterface::dump(std::ostream& o) const
 		}
 		else
 		{
-			// o << "Start "<< i <<  std::endl;
 			o << *(m_vectFunctions[i]);
-			// o << "Finish "<< i <<  std::endl;
 		}
 
 		o << std::endl;
