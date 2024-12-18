@@ -1,6 +1,7 @@
 ﻿
 <div align='center'>
-  <h1><code>RpcView (BoB13-MSRC_GASAN)</code></h1>
+  <h1><code>RpcView
+(BoB13-MSRC_GASAN)</code></h1>
   <p>
     <strong>Enhanced RpcView</strong><br>
     More decompiles possible, Representing a structure, automated IDL compile
