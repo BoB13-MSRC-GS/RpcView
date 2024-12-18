@@ -9,7 +9,7 @@
     Derived from RpcView of silverf0x
   </p>
   <p>
-    <img src='add please'/>
+    <img src='pics/rpcview.gif'/>
   </p>
 </div>
 
